@@ -543,6 +543,7 @@ warehouse_type_value = warehouse_type;
     data.color = $('select[name="color"]').val();
     data.guarantee = $('input[name="guarantee"]').val();
     data.warehouse_id = $('select[name="warehouse_id"]').val();
+    data.storage_location_id = $('select[name="storage_location_id"]').val();
     data.parent_id = $('select[name="parent_id"]').val();
 
     data.long_descriptions = tinymce.activeEditor.getContent();
@@ -794,6 +795,12 @@ warehouse_type_value = warehouse_type;
       $('#commodity_list-add-edit select[name="warehouse_id"]').val('').change();
     }
 
+    if($(invoker).data('storage_location_id') != 0){
+      $('#commodity_list-add-edit select[name="storage_location_id"]').val($(invoker).data('storage_location_id')).change();
+    }else{
+      $('#commodity_list-add-edit select[name="storage_location_id"]').val('').change();
+    }
+    
     if($(invoker).data('tax') != 0){
       $('#commodity_list-add-edit select[name="tax"]').val($(invoker).data('tax')).change();
     }else{
@@ -1154,6 +1161,7 @@ warehouse_type_value = warehouse_type;
     $('#commodity_list-add-edit select[name="commodity_type"]').val('').change();
     $('#commodity_list-add-edit select[name="group_id"]').val('').change();
     $('#commodity_list-add-edit select[name="warehouse_id"]').val('').change();
+    $('#commodity_list-add-edit select[name="storage_location_id"]').val('').change();
     $('#commodity_list-add-edit select[name="tax"]').val('').change();
 
     sub_group_value = '';

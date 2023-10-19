@@ -84,7 +84,9 @@ function wh_add_item_to_preview(id) {
     $('.main input[name="unit_id"]').val(response.unit_id);
     $('.main input[name="quantities"]').val('');
     $('.main select[name="from_stock_name"]').html(response.warehouses_html);
+    $('.main select[name="from_stock_storage_name"]').html(response.storage_location_html);
     $('.main select[name="from_stock_name"]').selectpicker('refresh');
+    $('.main select[name="from_stock_storage_name"]').selectpicker('refresh');
 
 
     if($('select[name="warehouse_id"]').val() != ''){
@@ -133,13 +135,17 @@ function wh_add_item_to_table(data, itemid) {
   "use strict"; 
 
   data = typeof (data) == 'undefined' || data == 'undefined' ? wh_get_item_preview_values() : data;
-
-  if (data.from_stock_name == "" || data.to_stock_name == "" || data.quantities == "" || data.commodity_code == "" || data.available_quantity == "") {
-   
+/* Modified for Add Location Start */
+  if (data.from_stock_name == "" || data.from_stock_storage_name == "" || data.to_stock_name == "" || data.to_stock_storage_name == "" || data.quantities == "" || data.commodity_code == "" || data.available_quantity == "") {
+/* Modified for Add Location End */
     if(data.from_stock_name == ""){
       alert_float('warning', '<?php echo _l('please_choose_from_stock_name') ?>');
+    }else if(data.from_stock_storage_name == ""){
+      alert_float('warning', '<?php echo _l('please_choose_to_stock_storage_name') ?>');
     }else if(data.from_stock_name == ""){
       alert_float('warning', '<?php echo _l('please_choose_to_stock_name') ?>');
+    }else if(data.from_stock_storage_name == ""){
+      alert_float('warning', '<?php echo _l('please_choose_to_stock_storage_name') ?>');
     }else if(parseFloat(data.from_warehouse_id) == parseFloat(data.to_warehouse_id)){
       alert_float('warning', '<?php echo _l('Please_choose_a_different_export_warehouse_than_the_receipt_warehouse') ?>');
     }else if(data.quantities == ""){
@@ -173,9 +179,10 @@ function wh_add_item_to_table(data, itemid) {
   var item_key = lastAddedItemKey ? lastAddedItemKey += 1 : $("body").find('.invoice-items-table tbody .item').length + 1;
   lastAddedItemKey = item_key;
   $("body").append('<div class="dt-loader"></div>');
-  wh_get_item_row_template('newitems[' + item_key + ']',data.commodity_name, data.from_stock_name, data.to_stock_name, data.available_quantity, data.quantities, data.unit_name, data.unit_price, data.commodity_code, data.unit_id, data.into_money, data.note, itemid, item_key).done(function(output){
+  /* Modified for Add Location Start */
+  wh_get_item_row_template('newitems[' + item_key + ']',data.commodity_name, data.from_stock_name, data.from_stock_storage_name, data.to_stock_name, data.to_stock_storage_name, data.available_quantity, data.quantities, data.unit_name, data.unit_price, data.commodity_code, data.unit_id, data.into_money, data.note, itemid, item_key).done(function(output){
     table_row += output;
-
+/* Modified for Add Location End */
     lastAddedItemKey = parseInt(lastAddedItemKey) + parseInt(data.quantities);
     $('.invoice-item table.invoice-items-table.items tbody').append(table_row);
 
@@ -194,14 +201,16 @@ function wh_add_item_to_table(data, itemid) {
   });
   return false;
 }
-
+/* Modified for Add Location */
 function wh_get_item_preview_values() {
   "use strict"; 
 
   var response = {};
   response.commodity_name = $('.invoice-item .main textarea[name="commodity_name"]').val();
   response.from_stock_name = $('.invoice-item .main select[name="from_stock_name"]').val();
+  response.from_stock_storage_name = $('.invoice-item .main select[name="from_stock_storage_name"]').val();
   response.to_stock_name = $('.invoice-item .main select[name="to_stock_name"]').val();
+  response.to_stock_storage_name = $('.invoice-item .main select[name="to_stock_storage_name"]').val();
   response.available_quantity = $('.invoice-item .main input[name="available_quantity"]').val();
   response.quantities = $('.invoice-item .main input[name="quantities"]').val();
   response.unit_name = $('.invoice-item .main input[name="unit_name"]').val();
@@ -222,8 +231,8 @@ function wh_clear_item_preview_values(parent) {
   previewArea.find('textarea').val('');
   previewArea.find('select').val('').selectpicker('refresh');
 }
-
-function wh_get_item_row_template(name, commodity_name, from_stock_name, to_stock_name, available_quantity, quantities, unit_name, unit_price, commodity_code, unit_id, into_money, note, item_key, item_index)  {
+/* Modified for Add Location */
+function wh_get_item_row_template(name, commodity_name, from_stock_name, from_stock_storage_name, to_stock_name, to_stock_storage_name, available_quantity, quantities, unit_name, unit_price, commodity_code, unit_id, into_money, note, item_key, item_index)  {
   "use strict"; 
 
   jQuery.ajaxSetup({
@@ -234,7 +243,9 @@ function wh_get_item_row_template(name, commodity_name, from_stock_name, to_stoc
     name: name,
     commodity_name : commodity_name,
     from_stock_name : from_stock_name,
+    from_stock_storage_name : from_stock_storage_name,
     to_stock_name : to_stock_name,
+    to_stock_storage_name : to_stock_storage_name,
     available_quantity : available_quantity,
     quantities : quantities,
     unit_name : unit_name,

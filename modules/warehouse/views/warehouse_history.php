@@ -73,6 +73,7 @@
                         _l('commodity_code'),
                         _l('warehouse_code'),
                         _l('warehouse_name'),
+                        _l('_storage_location'),
                         _l('day_vouchers'),
                         _l('opening_stock'),
                         _l('closing_stock'),

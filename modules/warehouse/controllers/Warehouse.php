@@ -555,6 +555,16 @@ class warehouse extends AdminController {
 	}
 
 	/**
+	 * Get Warehouse Locations
+	 *
+	 * @return JSON
+	 */
+	public function get_warehouse_locations(){ 
+		$ids = $this->input->post('warehouse');
+		$location = $this->warehouse_model->get_warehouse_add_location($ids);
+		echo json_encode($location);
+	}
+	/**
 	 * commodity list
 	 * @param  integer $id
 	 * @return load view
@@ -702,7 +712,9 @@ class warehouse extends AdminController {
 			$data = $this->input->post();
 
 			if (!$this->input->post('id')) {
-
+				/* echo "<pre>";
+				print_r($data);
+				die; */
 				$mess = $this->warehouse_model->add_goods_receipt($data);
 
 
@@ -1065,6 +1077,9 @@ class warehouse extends AdminController {
             $data['items']     = [];
             $data['ajaxItems'] = true;
         }
+		/* echo "<pre>";
+		print_r($data);
+		die; */
 		$this->load->view('warehouse/warehouse_history', $data);
 	}
 
@@ -2622,7 +2637,8 @@ print "here";exit;*/
 						$data['parent_id'] = $value['value'];
 					}
 				}
-
+				/* echo "<pre>";
+		print_r($data);die; */
 				$result = $this->warehouse_model->add_commodity_one_item($data);
 				if ($result) {
 
@@ -3727,6 +3743,7 @@ print "here";exit;*/
 		$data['items'] = $this->warehouse_model->get_items_code_name();
 		$data['unit'] = $this->warehouse_model->get_units_code_name();
 		$data['warehouses'] = $this->warehouse_model->get_warehouse_code_name();
+		$data['storage_location'] = $this->warehouse_model->get_storage_location_code_name($id = '');
 		$data['title'] = _l('loss_adjustment');
 		$data['ajaxItems'] = false;
 
@@ -5753,14 +5770,41 @@ print "here";exit;*/
 	}
 
 	/**
+	 * manage warehouse location
+	 * @param  string $id 
+	 * @return [type]     
+	 */
+	public function warehouse_location_manage($id = '') {
+
+		$data['title'] = _l('warehouse_manage');
+		$data['warehouse_types'] = $this->warehouse_model->get_warehouse();
+
+		$this->db->where('fieldto', 'warehouse_name');
+		$data['wh_custom_fields_display'] = $this->db->get(db_prefix().'customfields')->result_array();
+
+
+		$data['proposal_id'] = $id;
+
+		$this->load->view('includes/warehouse_location', $data);
+	}
+
+	/**
 	 * table warehouse name
 	 *
 	 * @return array
 	 */
-	public function table_warehouse_name() {
+	public function table_warehouse_name() {  
 		$this->app->get_table_data(module_views_path('warehouse', 'manage_warehouse/table_warehouse_name'));
 	}
 
+	/**
+	 * table warehouse location name
+	 *
+	 * @return array
+	 */
+	public function table_warehouse_location_name() {   
+		$this->app->get_table_data(module_views_path('warehouse', 'manage_warehouse/table_warehouse_location_name'));
+	}
 
 	/**
 	 * warehouse setting
@@ -5798,6 +5842,41 @@ print "here";exit;*/
 		}
 	}
 
+	/**
+	 * warehouse setting
+	 * @param  string $id 
+	 * @return [type]     
+	 */
+	public function add_storage_location($id = '') {
+		if ($this->input->post()) {
+			$message = '';
+			$data = $this->input->post();
+
+			if (!$this->input->post('id')) {
+
+				$mess = $this->warehouse_model->add_one_storage_location($data);
+				if ($mess) {
+					set_alert('success', _l('added_successfully') .' '. _l('Storage Location'));
+
+				} else {
+					set_alert('warning', _l('Not Added'));
+				}
+				redirect(admin_url('warehouse/warehouse_location_manage'));
+
+			} else {
+				$id = $data['id'];
+				unset($data['id']);
+				$success = $this->warehouse_model->update_one_warehouse($data, $id);
+				if ($success) {
+					set_alert('success', _l('updated_successfully') .' '. _l('warehouse'));
+				} else {
+					set_alert('warning', _l('updated_warehouse_false'));
+				}
+
+				redirect(admin_url('warehouse/warehouse_mange'));
+			}
+		}
+	}
 
     /**
      * get item by id ajax
@@ -7251,20 +7330,34 @@ if(strlen($data['inventory_filter']) > 0){
 				}
 			}elseif($get_warehouse){
 				$arr_warehouse_id = [];
+				$arr_storage_id = [];
 				$warehouses = $this->warehouse_model->get_commodity_warehouse($id);
 				if (count($warehouses) > 0) {
-					foreach ($warehouses as $warehouse) {
-						if(!in_array($warehouse['warehouse_id'], $arr_warehouse_id)){
-							$arr_warehouse_id[] = $warehouse['warehouse_id'];
-							if((float)$warehouse['inventory_number'] > 0){
+					foreach ($warehouses as $warehouse) { 
+						if(!in_array($warehouse['warehouse_id'], $arr_warehouse_id)){ 
+							$arr_warehouse_id[] = $warehouse['warehouse_id']; 
+							if((float)$warehouse['inventory_number'] > 0){ 
 								$html .= '<option value="' . $warehouse['warehouse_id'] . '">' . $warehouse['warehouse_name'] . '</option>';
+								//$slhtml .= '<option value="' . $warehouse['id'] . '">' . $warehouse['storage_location'] . '</option>';
+							}
+						}
+					} 
+					foreach ($warehouses as $warehouse) { 
+						if(!in_array($warehouse['id'], $arr_storage_id)){ 
+							 
+							$arr_storage_id[] = $warehouse['id'];
+							if((float)$warehouse['inventory_number'] > 0){
+								
+								//$html .= '<option value="' . $warehouse['warehouse_id'] . '">' . $warehouse['warehouse_name'] . '</option>';
+								$slhtml .= '<option value="' . $warehouse['id'] . '">' . $warehouse['storage_location'] . '</option>';
 							}
 						}
 					}
+					 //print_r($arr_storage_id);
 				}
 			}
 			$item->warehouses_html = $html;
-
+			$item->storage_location_html = $slhtml;
 			echo json_encode($item);
 		}
 	}
@@ -7278,6 +7371,7 @@ if(strlen($data['inventory_filter']) > 0){
 		$name = $this->input->post('name');
 		$commodity_name = $this->input->post('commodity_name');
 		$warehouse_id = $this->input->post('warehouse_id');
+		$storage_location_id = $this->input->post('storage_location_id');
 		$quantities = $this->input->post('quantities');
 		$unit_name = $this->input->post('unit_name');
 		$unit_price = $this->input->post('unit_price');
@@ -7292,8 +7386,9 @@ if(strlen($data['inventory_filter']) > 0){
 		$goods_money = $this->input->post('goods_money');
 		$note = $this->input->post('note');
 		$item_key = $this->input->post('item_key');
+		$itemNo = $this->input->post('itemNo');
 
-		echo $this->warehouse_model->create_goods_receipt_row_template([], $name, $commodity_name, $warehouse_id, $quantities, $unit_name, $unit_price, $taxname, $lot_number, $date_manufacture, $expiry_date, $commodity_code, $unit_id, $tax_rate, $tax_money, $goods_money, $note, $item_key);
+		echo $this->warehouse_model->create_goods_receipt_row_template([], $name, $commodity_name, $warehouse_id, $storage_location_id, $quantities, $unit_name, $unit_price, $taxname, $lot_number, $date_manufacture, $expiry_date, $commodity_code, $unit_id, $tax_rate, $tax_money, $goods_money, $note, $item_key, $itemNo);
 
 	}
 
@@ -7306,7 +7401,9 @@ if(strlen($data['inventory_filter']) > 0){
 		$name = $this->input->post('name');
 		$commodity_name = $this->input->post('commodity_name');
 		$from_stock_name = $this->input->post('from_stock_name');
+		$from_stock_storage_name = $this->input->post('from_stock_storage_name');
 		$to_stock_name = $this->input->post('to_stock_name');
+		$to_stock_storage_name = $this->input->post('to_stock_storage_name');
 		$available_quantity = $this->input->post('available_quantity');
 		$quantities = $this->input->post('quantities');
 		$unit_name = $this->input->post('unit_name');
@@ -7328,7 +7425,7 @@ if(strlen($data['inventory_filter']) > 0){
 			$quantities = 1;
 			$name = 'newitems['.$item_index.']';
 
-			$internal_delivery_row_template .= $this->warehouse_model->create_internal_delivery_row_template([], $name, $temporaty_commodity_name, $from_stock_name, $to_stock_name, $temporaty_available_quantity, $quantities, $unit_name, $unit_price, $commodity_code, $unit_id, $into_money, $note, $item_key, false,  $value['serial_number']);
+			$internal_delivery_row_template .= $this->warehouse_model->create_internal_delivery_row_template([], $name, $temporaty_commodity_name, $from_stock_name, $from_stock_storage_name, $to_stock_name, $to_stock_storage_name, $temporaty_available_quantity, $quantities, $unit_name, $unit_price, $commodity_code, $unit_id, $into_money, $note, $item_key, false,  $value['serial_number']);
 
 			$temporaty_quantity--;
 			$temporaty_available_quantity--;
@@ -7340,7 +7437,7 @@ if(strlen($data['inventory_filter']) > 0){
 			$available_quantity = $temporaty_available_quantity;
 			$name = 'newitems['.$item_index.']';
 
-			$internal_delivery_row_template .= $this->warehouse_model->create_internal_delivery_row_template([], $name, $commodity_name, $from_stock_name, $to_stock_name, $available_quantity, $quantities, $unit_name, $unit_price, $commodity_code, $unit_id, $into_money, $note, $item_key );
+			$internal_delivery_row_template .= $this->warehouse_model->create_internal_delivery_row_template([], $name, $commodity_name, $from_stock_name, $from_stock_storage_name, $to_stock_name, $to_stock_storage_name, $available_quantity, $quantities, $unit_name, $unit_price, $commodity_code, $unit_id, $into_money, $note, $item_key );
 		}
 
 		echo $internal_delivery_row_template;

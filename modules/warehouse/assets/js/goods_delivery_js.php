@@ -72,6 +72,34 @@ $("body").on('change', 'select[name="warehouse_id"]', function() {
     $('.main input[name="available_quantity"]').val(0);
     alert_float('warning', '<?php echo _l('inventory_quantity_is_not_enough') ?>');
   }
+  var warehouse = this.value;
+     if(warehouse){
+      
+      var url = admin_url + 'warehouse/warehouse/get_warehouse_locations';
+      $.ajax({
+      type    : "POST",
+      url       : url,
+      dataType: "json",
+      data    : { warehouse: warehouse },
+      success : function(data) {   
+        var $select = $('#storage_location_id');
+$select.find('option').remove();   
+ 
+if(data.length > 0){
+$.each(data,function(key, value) 
+{ 
+     $select.append('<option value=' + value.id + '>' + value.storage_location + '</option>');
+     $('#storage_location_id').selectpicker("refresh"); 
+}); 
+} else { $select.empty(); $('#storage_location_id').selectpicker("refresh"); 
+   
+  $select.find('option').remove();   
+  
+}
+
+      }
+    });  
+  }
 
 });
 

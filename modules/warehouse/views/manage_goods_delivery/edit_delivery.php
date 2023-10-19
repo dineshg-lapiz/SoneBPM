@@ -153,6 +153,7 @@
                  <th colspan="1">#</th>
                  <th  colspan="1"><?php echo _l('commodity_code') ?></th>
                  <th colspan="1"><?php echo _l('warehouse_name') ?></th>
+                 <th colspan="1"><?php echo _l('Storage Location') ?></th>
                  <th  colspan="1"><?php echo _l('unit_name') ?></th>
                  <th  colspan="1" class="text-center"><?php echo _l('quantity') ?></th>
                  <th align="right" colspan="1"><?php echo _l('rate') ?></th>
@@ -192,6 +193,7 @@
                  $commodity_name = get_commodity_name($receipt_value->commodity_code) != null ? get_commodity_name($receipt_value->commodity_code)->description : '';
 
                  $warehouse_name ='';
+                 $storage_name ='';
                  $subtotal += (float)$receipt_value->quantities * (float)$receipt_value->unit_price;
                  $item_subtotal = (float)$receipt_value->quantities * (float)$receipt_value->unit_price;
 
@@ -225,6 +227,35 @@
                   }
                 }
 
+                if(isset($receipt_value->storage_location_id) && ($receipt_value->storage_location_id !='')){
+                  $arr_storage_location = explode(',', $receipt_value->storage_location_id);
+
+                  $str = '';
+                  if(count($arr_storage_location) > 0){
+
+                    foreach ($arr_warehouse as $wh_key => $storage_location_id) {
+                      $str = '';
+                      if ($storage_location_id != '' && $storage_location_id != '0') {
+
+                        $team = get_storage_location_name($storage_location_id);
+                        if($team){
+                          $value = $team != null ? get_object_vars($team)['storage_location'] : '';
+
+                          $str .= '<span class="label label-tag tag-id-1"><span class="tag">' . $value . '</span><span class="hide">, </span></span>&nbsp';
+
+                          $storage_name .= $str;
+                          if($wh_key%3 ==0){
+                            $storage_name .='<br/>';
+                          }
+                        }
+
+                      }
+                    }
+
+                  } else {
+                    $storage_name  = '';
+                  }
+                }
 
                 $unit_name = '';
                 if(isset($receipt_value->unit_id) && ($receipt_value->unit_id !='')){
@@ -255,6 +286,7 @@
                  <td><?php echo html_entity_decode($receipt_key) ?></td>
                  <td ><?php echo html_entity_decode($commodity_name) ?></td>
                  <td ><?php echo html_entity_decode($warehouse_name) ?></td>
+                 <td ><?php echo html_entity_decode($storage_name) ?></td>
                  <td ><?php echo html_entity_decode($unit_name) ?></td>
                  <td class="text-right"><?php echo html_entity_decode($quantities) ?></td>
                  <td class="text-right"><?php echo app_format_money((float)$unit_price,'') ?></td>

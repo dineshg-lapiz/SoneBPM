@@ -195,6 +195,7 @@
                                     <th align="center">#</th>
                                     <th  colspan="1"><?php echo _l('commodity_code') ?></th>
                                      <th colspan="1"><?php echo _l('warehouse_name') ?></th>
+                                     <th colspan="1"><?php echo _l('Storage Location') ?></th>
                                      <th colspan="1"><?php echo _l('available_quantity') ?></th>
                                      <th  colspan="1"><?php echo _l('unit_name') ?></th>
                                      <th  colspan="1" class="text-center"><?php echo _l('quantity') ?></th>
@@ -232,7 +233,7 @@
 
 
                              $warehouse_name ='';
-
+                             $storage_name ='';
                             if(isset($delivery_value['warehouse_id']) && ($delivery_value['warehouse_id'] !='')){
                               $arr_warehouse = explode(',', $delivery_value['warehouse_id']);
 
@@ -262,8 +263,37 @@
                                 $warehouse_name = '';
                               }
                             }
+                            //echo $delivery_value['storage_location_id'];
+                            if(isset($delivery_value['storage_location_id']) && ($delivery_value['storage_location_id'] !='')){
+                              $arr_warehouse = explode(',', $delivery_value['storage_location_id']);
 
+                              $str = '';
+                              if(count($arr_warehouse) > 0){
 
+                                foreach ($arr_warehouse as $wh_key => $storageid) {
+                                  $str = '';
+                                  if ($storageid != '' && $storageid != '0') {
+
+                                    $team = get_storage_location_name($storageid);
+                                    
+                                    if($team){
+                                      $value = $team != null ? get_object_vars($team)['storage_location'] : '';
+
+                                      $str .= '<span class="label label-tag tag-id-1"><span class="tag">' . $value . '</span><span class="hide">, </span></span>&nbsp';
+
+                                      $storage_name .= $str;
+                                      if($wh_key%3 ==0){
+                                        $storage_name .='<br/>';
+                                      }
+                                    }
+
+                                  }
+                                }
+
+                              } else {
+                                $storage_name = '';
+                              }
+                            }
 
                              $unit_name = '';
                              if(is_numeric($delivery_value['unit_id'])){
@@ -295,6 +325,7 @@
                               <td ><?php echo html_entity_decode($delivery) ?></td>
                                   <td ><?php echo html_entity_decode($commodity_name) ?></td>
                                   <td ><?php echo html_entity_decode($warehouse_name) ?></td>
+                                  <td ><?php echo html_entity_decode($storage_name) ?></td>
                                   <td ><?php echo html_entity_decode($available_quantity) ?></td>
                                   <td ><?php echo html_entity_decode($unit_name) ?></td>
                                   <td class="text-right"><?php echo html_entity_decode($quantities) ?></td>

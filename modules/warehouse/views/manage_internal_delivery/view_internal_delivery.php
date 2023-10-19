@@ -135,7 +135,9 @@
                                     <th align="center">#</th>
                                     <th  colspan="1"><?php echo _l('commodity_code') ?></th>
                                      <th colspan="1"><?php echo _l('from_stock_name') ?></th>
+                                     <th colspan="1"><?php echo _l('from_stock_storage_name') ?></th>
                                      <th colspan="1"><?php echo _l('to_stock_name') ?></th>
+                                     <th colspan="1"><?php echo _l('to_stock_storage_name') ?></th>
                                      <th  colspan="1"><?php echo _l('unit_name') ?></th>
                                      <th  colspan="1" class="text-center"><?php echo _l('available_quantity') ?></th>
                                      <th  colspan="1" class="text-center"><?php echo _l('quantity_export') ?></th>
@@ -167,8 +169,11 @@
 
 
                               $from_stock_name = get_warehouse_name($internal_delivery_value['from_stock_name']) != null ? get_warehouse_name($internal_delivery_value['from_stock_name'])->warehouse_name : '';
+                              $from_stock_storage_name = get_storage_location_name($internal_delivery_value['from_stock_storage_name']) != null ? get_storage_location_name($internal_delivery_value['from_stock_storage_name'])->storage_location : '';
 
                               $to_stock_name = get_warehouse_name($internal_delivery_value['to_stock_name']) != null ? get_warehouse_name($internal_delivery_value['to_stock_name'])->warehouse_name : '';
+
+                              $to_stock_storage_name = get_storage_location_name($internal_delivery_value['to_stock_storage_name']) != null ? get_storage_location_name($internal_delivery_value['to_stock_storage_name'])->storage_location : '';
 
                               $commodity_name = $internal_delivery_value['commodity_name'];
                               if(strlen($commodity_name) == 0){
@@ -180,7 +185,9 @@
                               <td ><?php echo html_entity_decode($internal_delivery_key) ?></td>
                                   <td ><?php echo html_entity_decode($commodity_name) ?></td>
                                   <td ><?php echo html_entity_decode($from_stock_name) ?></td>
+                                  <td ><?php echo html_entity_decode($from_stock_storage_name) ?></td>
                                   <td ><?php echo html_entity_decode($to_stock_name) ?></td>
+                                  <td ><?php echo html_entity_decode($to_stock_storage_name) ?></td>
                                   <td ><?php echo html_entity_decode($unit_name) ?></td>
 
                                   <td class="text-right" ><?php echo html_entity_decode($availale_quantity) ?></td>

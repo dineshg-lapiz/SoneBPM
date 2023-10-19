@@ -25,7 +25,7 @@
            </div>
          </div>
          <div class="row">
-               <div class="col-md-4">
+               <div class="col-md-3">
                  <?php
                   $time = (isset($loss_adjustment) ? _dt($loss_adjustment->time) : _dt(date('Y-m-d H:i:s')));
                   echo render_datetime_input('time','_time',$time);
@@ -38,7 +38,7 @@
                     }
                    ?>
                </div>
-               <div class="col-md-4 form-group">
+               <div class="col-md-3 form-group">
                  <label for="vendor"><span class="text-danger">* </span><?php echo _l('type_label'); ?></label>
                   <select name="type" class="selectpicker" id="type" data-width="100%" data-none-selected-text="<?php echo _l('dropdown_non_selected_tex'); ?>" required="true"> 
                         <option value=""></option>
@@ -48,7 +48,7 @@
                  <br><br>
                </div>
 
-               <div class="col-md-4 form-group">
+               <div class="col-md-3 form-group">
                  <label for="vendor"><span class="text-danger">* </span><?php echo _l('_warehouse'); ?></label>
                   <select name="warehouses" class="selectpicker" id="warehouses" data-width="100%" data-none-selected-text="<?php echo _l('dropdown_non_selected_tex'); ?>" required="true"> 
                         <option value=""></option>
@@ -58,7 +58,16 @@
                   </select>
                  <br><br>
                </div>                  
-                            
+               <div class="col-md-3 form-group">
+                 <label for="vendor"><span class="text-danger">* </span><?php echo _l('_storage'); ?></label>
+                  <select name="storage_location" class="selectpicker" id="storage_location" data-width="100%" data-none-selected-text="<?php echo _l('dropdown_non_selected_tex'); ?>" required="true"> 
+                        <option value=""></option>
+                        <?php foreach($storage_location as $sl){ ?>
+                          <option value="<?php echo html_entity_decode($sl['id']); ?>"><?php echo html_entity_decode($sl['label']); ?></option>
+                        <?php } ?>
+                  </select>
+                 <br><br>
+               </div>     
          </div>
        </div>
 
@@ -144,5 +153,41 @@
 <?php init_tail(); ?>
 
 <?php require 'modules/warehouse/assets/js/add_loss_adjustment_js.php';?>
+<script>
+  $(function() { 
+	var admin_url = '<?php echo admin_url(); ?>';
+	$(document.body).on('change', 'select#warehouses',function() {    
+	  var url = admin_url + 'warehouse/warehouse/get_warehouse_locations';
+    var warehouse = this.value; alert(warehouse);
+     if(warehouse){ 
+      $.ajax({
+      type    : "POST",
+      url       : url,
+      dataType: "json",
+      data    : { warehouse: warehouse },
+      success : function(data) {   
+        var $select = $('#storage_location');
+$select.find('option').remove();   
+ 
+if(data.length > 0){
+$.each(data,function(key, value) 
+{ 
+     $select.append('<option value=' + value.id + '>' + value.storage_location + '</option>');
+     $('#storage_location').selectpicker("refresh"); 
+}); 
+} else { $select.empty(); $('#storage_location').selectpicker("refresh"); 
+   
+  $select.find('option').remove();   
+  
+}
+
+      }
+    });  
+  }
+	    
+      
+    }); 
+  });
+    </script>
 </body>
 </html>
