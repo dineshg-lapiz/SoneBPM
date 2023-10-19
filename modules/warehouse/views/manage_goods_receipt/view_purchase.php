@@ -138,6 +138,7 @@
                                     <th align="center">#</th>
                                     <th  colspan="1"><?php echo _l('commodity_code') ?></th>
                                      <th colspan="1"><?php echo _l('warehouse_name') ?></th>
+                                     <th colspan="1"><?php echo _l('Storaage Location') ?></th>
                                      <th  colspan="1"><?php echo _l('unit_name') ?></th>
                                      <th  colspan="2" class="text-center"><?php echo _l('quantity') ?></th>
                                      <th align="right" colspan="1"><?php echo _l('unit_price') ?></th>
@@ -168,6 +169,7 @@
                              }
 
                               $warehouse_code = get_warehouse_name($receipt_value['warehouse_id']) != null ? get_warehouse_name($receipt_value['warehouse_id'])->warehouse_name : '';
+                              $storage_location = get_storage_location_name($receipt_value['storage_location_id']) != null ? get_storage_location_name($receipt_value['storage_location_id'])->storage_location : '';
                               $tax_money =(isset($receipt_value) ? $receipt_value['tax_money'] : '');
                               $expiry_date =(isset($receipt_value) ? $receipt_value['expiry_date'] : '');
                               $lot_number =(isset($receipt_value) ? $receipt_value['lot_number'] : '');
@@ -189,6 +191,7 @@
                               <td ><?php echo html_entity_decode($receipt_key) ?></td>
                                   <td ><?php echo html_entity_decode($commodity_name) ?></td>
                                   <td ><?php echo html_entity_decode($warehouse_code) ?></td>
+                                  <td ><?php echo html_entity_decode($storage_location) ?></td>
                                   <td ><?php echo html_entity_decode($unit_name) ?></td>
                                   <td ></td>
                                   <td class="text-right" ><?php echo html_entity_decode($quantities) ?></td>

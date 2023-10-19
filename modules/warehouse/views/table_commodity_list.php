@@ -6,6 +6,7 @@ $filter_arr_inventory_min_max = $this->ci->warehouse_model->filter_arr_inventory
 $arr_inventory_min_id = $filter_arr_inventory_min_max['inventory_min'];
 $arr_inventory_max_id = $filter_arr_inventory_min_max['inventory_max'];
 
+/* Modified code for Add Location*/
 $aColumns = [
 	'1',
 	db_prefix() . 'items.id',
@@ -15,6 +16,7 @@ $aColumns = [
 	'hsn_code',
 	db_prefix() . 'items_groups.name as group_name',
 	db_prefix() . 'items.warehouse_id',
+	 't3.storage_location',
 	'(SELECT GROUP_CONCAT(name SEPARATOR ",") FROM ' . db_prefix() . 'taggables JOIN ' . db_prefix() . 'tags ON ' . db_prefix() . 'taggables.tag_id = ' . db_prefix() . 'tags.id WHERE rel_id = ' . db_prefix() . 'items.id and rel_type="item_tags" ORDER by tag_order ASC) as tags',
 	'commodity_barcode',
 	'unit_id',
@@ -49,6 +51,7 @@ $barcode_filter = $this->ci->input->post('barcode_filter');
 $join = [
 	'LEFT JOIN ' . db_prefix() . 'taxes t1 ON t1.id = ' . db_prefix() . 'items.tax',
 	'LEFT JOIN ' . db_prefix() . 'taxes t2 ON t2.id = ' . db_prefix() . 'items.tax2',
+	'LEFT JOIN ' . db_prefix() . 'location t3 ON t3.id = ' . db_prefix() . 'items.storage_location_id',
 	'LEFT JOIN ' . db_prefix() . 'items_groups ON ' . db_prefix() . 'items_groups.id = ' . db_prefix() . 'items.group_id',
 ];
 
@@ -298,8 +301,12 @@ $item_have_variation = $this->ci->warehouse_model->arr_item_have_variation();
 				$_data = $aRow['hsn_code'];	
 			} elseif ($aColumns[$i] == 'group_name') {
 				$_data = $aRow['group_name'];
+			/* Added code for Add  Location start*/
+			} elseif ($aColumns[$i] == 't3.storage_location') {
+				$_data = $aRow['storage_location'];
 
-			} elseif ($aColumns[$i] == db_prefix() . 'items.warehouse_id') {
+			} /* Added code for Add  Location End*/
+			elseif ($aColumns[$i] == db_prefix() . 'items.warehouse_id') {
 				$_data ='';
 
 				if(isset($item_have_variation[$aRow['id']]) && (float)$item_have_variation[$aRow['id']]['total_child'] > 0 ){

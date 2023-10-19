@@ -225,7 +225,25 @@ function get_warehouse_name($id = false)
     }
 
 }
+/**
+ * get storage location
+ * @param  integer $id
+ * @return array or row
+ */
+function get_storage_location_name($id = false)
+{
+    $CI           = & get_instance();
 
+    if ($id != false) {
+        $CI->db->where('id', $id);
+
+        return $CI->db->get(db_prefix() . 'location')->row();
+    }
+    if ($id == false) {
+        return $CI->db->query('select * from tblllocation')->result_array();
+    }
+
+}
 
 /**
  * get commodity name

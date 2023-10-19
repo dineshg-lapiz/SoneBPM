@@ -104,7 +104,9 @@
                     <th></th>
                     <th width="20%" align="left"><i class="fa fa-exclamation-circle" aria-hidden="true" data-toggle="tooltip" data-title="<?php echo _l('item_description_new_lines_notice'); ?>"></i> <?php echo _l('invoice_table_item_heading'); ?></th>
                     <th width="15%" align="left"><?php echo _l('from_stock_name'); ?></th>
+                    <th width="15%" align="left"><?php echo _l('From stock storage name'); ?></th>
                     <th width="15%" align="left"><?php echo _l('to_stock_name'); ?></th>
+                    <th width="15%" align="left"><?php echo _l('To stock storage name'); ?></th>                    
                     <th width="10%" align="right" class="qty"><?php echo _l('available_quantity'); ?></th>
                     <th width="10%" align="right" class="qty"><?php echo _l('quantity'); ?></th>
                     <th width="10%" align="right"><?php echo _l('unit_price'); ?></th>
@@ -171,3 +173,72 @@
 </body>
 </html>
 <?php require 'modules/warehouse/assets/js/add_edit_internal_delivery_js.php';?>
+<script>
+  $(function() { 
+	var admin_url = '<?php echo admin_url(); ?>';
+	$(document.body).on('change', '.change_location select',function() {   
+      var selid = $(this).attr('id'); 
+	  var url = admin_url + 'warehouse/warehouse/get_warehouse_locations';
+	  if(selid != 'to_stock_name'){  
+		var warehouse = this.value;
+		if(warehouse){   
+			var parentclass = $(this).parent().parent().parent().closest('td').next('td').find('select'); 
+			parentclass.find('option').remove();   
+			parentclass.selectpicker("refresh");  
+      $.ajax({
+      type    : "POST",
+      url       : url,
+      dataType: "json",
+      data    : { warehouse: warehouse },
+      success : function(data) {   
+		var $select = parentclass;
+if(data.length > 0){
+$.each(data,function(key, value) 
+{ 
+     $select.append('<option value=' + value.id + '>' + value.storage_location + '</option>');
+     parentclass.selectpicker("refresh"); 
+}); 
+} else { $select.empty(); parentclass.selectpicker("refresh"); 
+   
+  $select.find('option').remove();   
+  
+}
+
+      }
+    });  
+  }
+		
+	  } else {   
+		var warehouse = this.value; alert(warehouse);
+     if(warehouse){
+      
+     
+      $.ajax({
+      type    : "POST",
+      url       : url,
+      dataType: "json",
+      data    : { warehouse: warehouse },
+      success : function(data) {   
+        var $select = $('#to_stock_storage_name');
+$select.find('option').remove();   
+ 
+if(data.length > 0){
+$.each(data,function(key, value) 
+{ 
+     $select.append('<option value=' + value.id + '>' + value.storage_location + '</option>');
+     $('#to_stock_storage_name').selectpicker("refresh"); 
+}); 
+} else { $select.empty(); $('#to_stock_storage_name').selectpicker("refresh"); 
+   
+  $select.find('option').remove();   
+  
+}
+
+      }
+    });  
+  }
+	  }
+      
+    }); 
+  });
+    </script>

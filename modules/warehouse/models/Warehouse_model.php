@@ -260,6 +260,19 @@ class Warehouse_model extends App_Model {
 	}
 
 	/**
+	 * get storage location code name
+	 * @return array
+	 */
+	public function get_storage_location_code_name($id='') {
+		if($id){
+		return $this->db->query('select id, storage_location as label from ' . db_prefix() . 'location where id = '.$id.' order by '.db_prefix().'location.id asc')->result_array();
+		} else {
+			return $this->db->query('select id, storage_location as label from ' . db_prefix() . 'location order by '.db_prefix().'location.id asc')->result_array();
+		}	
+	}
+
+
+	/**
 	 * delete unit type
 	 * @param  integer $id
 	 * @return boolean
@@ -868,12 +881,38 @@ class Warehouse_model extends App_Model {
 	}
 
 	/**
+	 * get warehouse
+	 * @param  boolean $id
+	 * @return array or object
+	 */
+	public function get_storage_location($id = false) {
+
+		if (is_numeric($id)) {
+			$this->db->where('warehouse_id', $id);
+
+			return $this->db->get(db_prefix() . 'location')->result_array();
+		}
+		if ($id == false) {
+			return $this->db->query('select * from '.db_prefix().'location order by '.db_prefix().'location.id asc')->result_array();
+		}
+
+	}
+	/**
 	 * get warehouse add commodity
 	 * @return array
 	 */
 	public function get_warehouse_add_commodity() {
 
 		return $this->db->query('select * from tblwarehouse where display = 1 order by tblwarehouse.order asc')->result_array();
+	}
+
+	/**
+	 * get warehouse add commodity
+	 * @return array
+	 */
+	public function get_warehouse_add_location($warehouse_id) {
+		 
+		return $this->db->query('select * from '.db_prefix().'location where warehouse_id in ('.$warehouse_id.')   order by '.db_prefix().'location.id asc')->result_array();
 	}
 
 	/**
@@ -1139,6 +1178,7 @@ class Warehouse_model extends App_Model {
 		unset($data['item_select']);
 		unset($data['commodity_name']);
 		unset($data['warehouse_id']);
+		unset($data['storage_location_id']);
 		unset($data['quantities']);
 		unset($data['unit_price']);
 		unset($data['tax']);
@@ -1160,7 +1200,10 @@ class Warehouse_model extends App_Model {
 			$data['warehouse_id'] = $data['warehouse_id_m'];
 			unset($data['warehouse_id_m']);
 		}
-
+		if(isset($data['storage_location_id_m'])){
+			$data['storage_location_id'] = $data['storage_location_id_m'];
+			unset($data['storage_location_id_m']);
+		}
 		if(isset($data['expiry_date_m'])){
 			$data['expiry_date'] = to_sql_date($data['expiry_date_m']);
 			unset($data['expiry_date_m']);
@@ -2051,8 +2094,9 @@ class Warehouse_model extends App_Model {
 	public function get_commodity_warehouse($commodity_id = false) {
 		if ($commodity_id != false) {
 
-			$sql = 'SELECT ' . db_prefix() . 'warehouse.warehouse_name, '.db_prefix().'warehouse.warehouse_id, '.db_prefix().'inventory_manage.inventory_number FROM ' . db_prefix() . 'inventory_manage
+			$sql = 'SELECT ' . db_prefix() . 'warehouse.warehouse_name, '.db_prefix().'warehouse.warehouse_id, '.db_prefix().'location.id,'.db_prefix().'location.storage_location, '.db_prefix().'inventory_manage.inventory_number FROM ' . db_prefix() . 'inventory_manage
 			LEFT JOIN ' . db_prefix() . 'warehouse on ' . db_prefix() . 'inventory_manage.warehouse_id = ' . db_prefix() . 'warehouse.warehouse_id
+			LEFT JOIN ' . db_prefix() . 'location on ' . db_prefix() . 'location.warehouse_id = ' . db_prefix() . 'warehouse.warehouse_id
 			where ' . db_prefix() . 'inventory_manage.commodity_id = ' . $commodity_id.' AND '.db_prefix().'inventory_manage.inventory_number > 0 order by '.db_prefix().'warehouse.order asc';
 
 			return $this->db->query($sql)->result_array();
@@ -5572,7 +5616,8 @@ class Warehouse_model extends App_Model {
 		if(isset($unit_type->unit_name)){
 			$data['unit'] = $unit_type->unit_name;
 		}
-
+		/* echo "<pre>";
+		print_r($data);die; */
 		$this->db->insert(db_prefix() . 'items', $data);
 		$insert_id = $this->db->insert_id();
 
@@ -6474,7 +6519,7 @@ class Warehouse_model extends App_Model {
 		$data_add['addfrom'] = $data['addfrom'];
 		$data_add['date_create'] = $data['date_create'];
 		$data_add['warehouses'] = $data['warehouses'];
-
+		$data_add['storage_location'] = $data['storage_location'];
 		$this->db->insert(db_prefix() . 'wh_loss_adjustment', $data_add);
 		$insert_id = $this->db->insert_id();
 		if ($insert_id) {
@@ -11344,7 +11389,9 @@ class Warehouse_model extends App_Model {
 		unset($data['item_select']);
 		unset($data['commodity_name']);
 		unset($data['from_stock_name']);
+		unset($data['from_stock_storage_name']);
 		unset($data['to_stock_name']);
+		unset($data['to_stock_storage_name']);
 		unset($data['available_quantity']);
 		unset($data['quantities']);
 		unset($data['unit_price']);
@@ -11391,7 +11438,9 @@ class Warehouse_model extends App_Model {
 
     	$data['total_amount'] 	= reformat_currency_j($data['total_amount']);
     	$data['addedfrom'] = get_staff_user_id();
-
+		/* echo "<pre>";
+		print_r($data);
+		die; */
     	$this->db->insert(db_prefix() . 'internal_delivery_note', $data);
     	$insert_id = $this->db->insert_id();
 
@@ -11852,6 +11901,29 @@ class Warehouse_model extends App_Model {
     	return false;
     }
 
+	/**
+     * add one warehouse
+     * @param [type] $data 
+     */
+    public function add_one_storage_location($data) {
+
+    	 
+		/* echo "<pre>";
+		print_r($data);die; */
+    	$this->db->insert(db_prefix() . 'location', $data);
+    	$insert_id = $this->db->insert_id();
+
+    	if ($insert_id) {
+    		if (isset($custom_fields)) {
+    			handle_custom_fields_post($insert_id, $custom_fields);
+    		}
+
+    		return $insert_id;
+    	}
+
+
+    	return false;
+    }
 	/**
 	 * update color
 	 * @param  array $data
@@ -12922,8 +12994,9 @@ class Warehouse_model extends App_Model {
 		}else{
 			$this->db->where('expiry_date', $expiry_date);
 		}
-
+		
 		return $this->db->get(db_prefix() . 'inventory_manage')->row();
+		// echo $this->db->last_query();  die;
 
 
 	}
@@ -15390,7 +15463,7 @@ class Warehouse_model extends App_Model {
      * @param  boolean $is_edit          
      * @return [type]                    
      */
-    public function create_goods_receipt_row_template($warehouse_data = [], $name = '', $commodity_name = '', $warehouse_id = '', $quantities = '', $unit_name = '', $unit_price = '', $taxname = '', $lot_number = '', $date_manufacture = '', $expiry_date = '', $commodity_code = '', $unit_id = '', $tax_rate = '', $tax_money = '', $goods_money = '', $note = '', $item_key = '', $sub_total = '', $tax_name = '', $tax_id = '', $is_edit = false, $serial_number = '') {
+    public function create_goods_receipt_row_template($warehouse_data = [], $name = '', $commodity_name = '', $warehouse_id = '', $storage_location_id = '', $quantities = '', $unit_name = '', $unit_price = '', $taxname = '', $lot_number = '', $date_manufacture = '', $expiry_date = '', $commodity_code = '', $unit_id = '', $tax_rate = '', $tax_money = '', $goods_money = '', $note = '', $item_key = '', $sub_total = '', $tax_name = '', $tax_id = '', $is_edit = false, $serial_number = '', $itemNo='', $storage_data = []) {
 		
 		$this->load->model('invoice_items_model');
 		$row = '';
@@ -15398,6 +15471,7 @@ class Warehouse_model extends App_Model {
 		$name_commodity_code = 'commodity_code';
 		$name_commodity_name = 'commodity_name';
 		$name_warehouse_id = 'warehouse_id';
+		$name_storage_location_id = 'storage_location_id';
 		$name_unit_id = 'unit_id';
 		$name_unit_name = 'unit_name';
 		$name_quantities = 'quantities';
@@ -15424,7 +15498,15 @@ class Warehouse_model extends App_Model {
 		if(count($warehouse_data) == 0){
 			$warehouse_data = $this->get_warehouse();
 		}
-
+		if(count($storage_data) == 0){
+			if($warehouse_id) {
+			$storage_data = $this->get_storage_location($warehouse_id);
+			} else {
+				$storage_data = $this->get_storage_location();
+			}
+		} else {
+			$storage_data = [];
+		}
 		if ($name == '') {
 			$row .= '<tr class="main">
                   <td></td>';
@@ -15438,10 +15520,11 @@ class Warehouse_model extends App_Model {
 
 		} else {
 			$row .= '<tr class="sortable item">
-					<td class="dragger"><input type="hidden" class="order" name="' . $name . '[order]"><input type="hidden" class="ids" name="' . $name . '[id]" value="' . $item_key . '"></td>';
+					<td class="dragger"><input type="hidden" class="order" name="' . $name . '[order]"><input type="hidden" class="ids" data-name="'.$name.'" name="' . $name . '[id]" value="' . $item_key . '"></td>';
 			$name_commodity_code = $name . '[commodity_code]';
 			$name_commodity_name = $name . '[commodity_name]';
 			$name_warehouse_id = $name . '[warehouse_id]';
+			$name_storage_location_id = $name . '[storage_location_id]';
 			$name_unit_id = $name . '[unit_id]';
 			$name_unit_name = '[unit_name]';
 			$name_quantities = $name . '[quantities]';
@@ -15499,10 +15582,15 @@ class Warehouse_model extends App_Model {
 		$clients_attr = ["onchange" => "get_vehicle('" . $name_commodity_code . "','" . $name_unit_id . "','" . $name_warehouse_id . "');", "data-none-selected-text" => _l('customer_name'), 'data-customer_id' => 'invoice'];
 
 		$row .= '<td class="">' . render_textarea($name_commodity_name, '', $commodity_name, ['rows' => 2, 'placeholder' => _l('item_description_placeholder'), 'readonly' => true] ) . '</td>';
-		$row .= '<td class="warehouse_select">' .
+		$row .= '<td class="warehouse_select change_location">' .
 		// render_select_with_input_group($name_warehouse_id, $warehouse_data,array('warehouse_id','warehouse_name'),'',$warehouse_id,'<a href="javascript:void(0)" onclick="new_vehicle_reg(this,\''.$name_commodity_code.'\', \''.$name_warehouse_id.'\');return false;"><i class="fa fa-plus"></i></a>', ["data-none-selected-text" => _l('warehouse_name')]).
-		render_select($name_warehouse_id, $warehouse_data,array('warehouse_id','warehouse_name'),'',$warehouse_id,[], ["data-none-selected-text" => _l('warehouse_name')], 'no-margin').
+		render_select($name_warehouse_id, $warehouse_data,array('warehouse_id','warehouse_name'),'',$warehouse_id,[], ["data-none-selected-text" => _l('warehouse_name')], 'no-margin aaa').
 		render_input($name_note, '', $note, 'text', ['placeholder' => _l('commodity_notes')], [], 'no-margin', 'input-transparent text-left').
+		'</td>';
+		$row .= '<td class="warehouse_location_select_'.$itemNo.' ">' .
+		// render_select_with_input_group($name_warehouse_id, $warehouse_data,array('warehouse_id','warehouse_name'),'',$warehouse_id,'<a href="javascript:void(0)" onclick="new_vehicle_reg(this,\''.$name_commodity_code.'\', \''.$name_warehouse_id.'\');return false;"><i class="fa fa-plus"></i></a>', ["data-none-selected-text" => _l('warehouse_name')]).
+		render_select($name_storage_location_id, $storage_data, array('id','storage_location'),'',$storage_location_id,[], ["data-none-selected-text" => _l('storage_location')], 'no-margin').
+		 
 		'</td>';
 		$row .= '<td class="quantities">' . 
 		render_input($name_quantities, '', $quantities, 'number', $array_qty_attr, [], 'no-margin') . 
@@ -15861,16 +15949,18 @@ class Warehouse_model extends App_Model {
 	 * @param  string  $note               
 	 * @param  string  $item_key           
 	 * @param  boolean $is_edit            
-	 * @return [type]                      
-	 */
-	public function create_internal_delivery_row_template($warehouse_data = [], $name = '', $commodity_name = '', $from_stock_name = '', $to_stock_name = '', $available_quantity = '', $quantities = '', $unit_name = '', $unit_price = '', $commodity_code = '', $unit_id = '', $into_money = '', $note = '', $item_key = '', $is_edit = false, $serial_number = '') {
+	 * @return [type]                      																													
+	 */																												 											
+	public function create_internal_delivery_row_template($warehouse_data = [], $name = '', $commodity_name = '', $from_stock_name = '', $from_stock_storage_name = '', $to_stock_name = '', $to_stock_storage_name = '', $available_quantity = '', $quantities = '', $unit_name = '', $unit_price = '', $commodity_code = '', $unit_id = '', $into_money = '', $note = '', $item_key = '', $is_edit = false, $serial_number = '', $from_storage_data = [], $to_storage_data = []) {
 		
 		$row = '';
 
 		$name_commodity_code = 'commodity_code';
 		$name_commodity_name = 'commodity_name';
 		$name_from_stock_name = 'from_stock_name';
+		$name_from_stock_storage_name = 'from_stock_storage_name';
 		$name_to_stock_name = 'to_stock_name';
+		$name_to_stock_storage_name = 'to_stock_storage_name';
 		$name_unit_id = 'unit_id';
 		$name_unit_name = 'unit_name';
 		$name_available_quantity = 'available_quantity';
@@ -15891,7 +15981,24 @@ class Warehouse_model extends App_Model {
 		if(count($warehouse_data) == 0){
 			$warehouse_data = $this->get_warehouse();
 		}
-
+		if(count($from_storage_data) == 0){
+			if($from_stock_name) {
+			$from_storage_data = $this->get_storage_location($from_stock_name);
+			} else {
+				$from_storage_data = $this->get_storage_location();
+			}
+		} else {
+			$from_storage_data = [];
+		}
+		if(count($to_storage_data) == 0){
+			if($to_storage_data) {
+			$to_storage_data = $this->get_storage_location($to_stock_name);
+			} else {
+				$to_storage_data = $this->get_storage_location();
+			}
+		} else {
+			$to_storage_data = [];
+		}
 		if ($name == '') {
 			$row .= '<tr class="main">
                   <td></td>';
@@ -15911,7 +16018,9 @@ class Warehouse_model extends App_Model {
 			$name_commodity_code = $name . '[commodity_code]';
 			$name_commodity_name = $name . '[commodity_name]';
 			$name_from_stock_name = $name . '[from_stock_name]';
+			$name_from_stock_storage_name = $name . '[from_stock_storage_name]';
 			$name_to_stock_name = $name . '[to_stock_name]';
+			$name_to_stock_storage_name = $name . '[to_stock_storage_name]';
 			$name_unit_id = $name . '[unit_id]';
 			$name_unit_name = $name .'[unit_name]';
 			$name_available_quantity = $name . '[available_quantity]';
@@ -15965,10 +16074,17 @@ class Warehouse_model extends App_Model {
 		render_select($name_from_stock_name, $warehouse_data,array('warehouse_id','warehouse_name'),'',$from_stock_name, $from_stock_name_attr, ["data-none-selected-text" => _l('from_stock_name')], 'no-margin').
 		render_input($name_note, '', $note, 'text', ['placeholder' => _l('commodity_notes')], [], 'no-margin', 'input-transparent text-left').
 		'</td>';
-		$row .= '<td class="to_warehouse_select">' .
+		$row .= '<td class="warehouse_select">' .
+		// render_select_with_input_group($name_warehouse_id, $warehouse_data,array('warehouse_id','warehouse_name'),'',$warehouse_id,'<a href="javascript:void(0)" onclick="new_vehicle_reg(this,\''.$name_commodity_code.'\', \''.$name_warehouse_id.'\');return false;"><i class="fa fa-plus"></i></a>', ["data-none-selected-text" => _l('warehouse_name')]).
+		render_select($name_from_stock_storage_name, $from_storage_data,array('id','storage_location'),'',$from_stock_storage_name, $from_stock_name_attr, ["data-none-selected-text" => _l('from_stock_name')], 'no-margin').
+		 
+		'</td>';
+		$row .= '<td class="to_warehouse_select change_location">' .
 		render_select($name_to_stock_name, $warehouse_data,array('warehouse_id','warehouse_name'),'',$to_stock_name,[], ["data-none-selected-text" => _l('to_stock_name')]).
 		'</td>';
-		
+		$row .= '<td class="to_warehouse_select">' .
+		render_select($name_to_stock_storage_name, $to_storage_data,array('id','storage_location'),'',$to_stock_storage_name,[], ["data-none-selected-text" => _l('to_stock_storage_name')]).
+		'</td>';
 		$row .= '<td class="available_quantity">' . 
 		render_input($name_available_quantity, '', $available_quantity, 'number', $array_available_quantity_attr, [], 'no-margin') . 
 		render_input($name_unit_name, '', $unit_name, 'text', ['placeholder' => _l('unit'), 'readonly' => true], [], 'no-margin', 'input-transparent text-right wh_input_none').
@@ -16147,7 +16263,7 @@ class Warehouse_model extends App_Model {
      * @param  boolean $is_edit              
      * @return [type]                        
      */
-    public function create_goods_delivery_row_template($warehouse_data = [], $name = '', $commodity_name = '', $warehouse_id = '', $available_quantity = '', $quantities = '', $unit_name = '', $unit_price = '', $taxname = '',  $commodity_code = '', $unit_id = '', $tax_rate = '', $total_money = '', $discount = '', $discount_money = '', $total_after_discount = '', $guarantee_period = '', $expiry_date = '', $lot_number = '', $note = '',  $sub_total = '', $tax_name = '', $tax_id = '', $item_key = '',$is_edit = false, $is_purchase_order = false, $serial_number = '', $without_checking_warehouse = 0) {
+    public function create_goods_delivery_row_template($warehouse_data = [], $name = '', $commodity_name = '', $warehouse_id = '', $available_quantity = '', $quantities = '', $unit_name = '', $unit_price = '', $taxname = '',  $commodity_code = '', $unit_id = '', $tax_rate = '', $total_money = '', $discount = '', $discount_money = '', $total_after_discount = '', $guarantee_period = '', $expiry_date = '', $lot_number = '', $note = '',  $sub_total = '', $tax_name = '', $tax_id = '', $item_key = '',$is_edit = false, $is_purchase_order = false, $serial_number = '', $without_checking_warehouse = 0, $storage_data = []) {
 		
 		$this->load->model('invoice_items_model');
 		$row = '';
@@ -16155,6 +16271,7 @@ class Warehouse_model extends App_Model {
 		$name_commodity_code = 'commodity_code';
 		$name_commodity_name = 'commodity_name';
 		$name_warehouse_id = 'warehouse_id';
+		$name_storage_location_id = 'storage_location_id';
 		$name_unit_id = 'unit_id';
 		$name_unit_name = 'unit_name';
 		$name_available_quantity = 'available_quantity';
@@ -16187,7 +16304,15 @@ class Warehouse_model extends App_Model {
 		if(count($warehouse_data) == 0){
 			$warehouse_data = $this->get_warehouse();
 		}
-
+		if(count($storage_data) == 0){
+			if($warehouse_id) {
+			$storage_data = $this->get_storage_location($warehouse_id);
+			} else {
+				$storage_data = $this->get_storage_location();
+			}
+		} else {
+			$storage_data = [];
+		}
 		if ($name == '') {
 			$row .= '<tr class="main">
                   <td></td>';
@@ -16205,6 +16330,7 @@ class Warehouse_model extends App_Model {
 			$name_commodity_code = $name . '[commodity_code]';
 			$name_commodity_name = $name . '[commodity_name]';
 			$name_warehouse_id = $name . '[warehouse_id]';
+			$name_storage_location_id = $name . '[storage_location_id]';
 			$name_unit_id = $name . '[unit_id]';
 			$name_unit_name = '[unit_name]';
 			$name_available_quantity = $name . '[available_quantity]';
@@ -16276,10 +16402,14 @@ class Warehouse_model extends App_Model {
 		$row .= '<td class="">' . render_textarea($name_commodity_name, '', $commodity_name, ['rows' => 2, 'placeholder' => _l('item_description_placeholder'), 'readonly' => true] ) . '</td>';
 
 
-		$row .= '<td class="warehouse_select">' .
+		$row .= '<td class="warehouse_select  change_location">' .
 		render_select($name_warehouse_id, $warehouse_data,array('warehouse_id','warehouse_name'),'',$warehouse_id, $warehouse_id_name_attr, ["data-none-selected-text" => _l('warehouse_name')], 'no-margin').
 		render_input($name_note, '', $note, 'text', ['placeholder' => _l('commodity_notes')], [], 'no-margin', 'input-transparent text-left').
-		'</td>';
+		'</td>'; 
+		$row .= '<td class="warehouse_location_select">' .
+		//render_select($name_warehouse_id, $warehouse_data,array('warehouse_id','warehouse_name'),'',$warehouse_id, $warehouse_id_name_attr, ["data-none-selected-text" => _l('warehouse_name')], 'no-margin').
+		render_select($name_storage_location_id, $storage_data, array('id','storage_location'),'',$storage_location_id,[], ["data-none-selected-text" => _l('storage_location')], 'no-margin').
+		'</td>'; 
 		$row .= '<td class="available_quantity">' . 
 		render_input($name_available_quantity, '', $available_quantity, 'number', $array_available_quantity_attr, [], 'no-margin') . 
 		render_input($name_unit_name, '', $unit_name, 'text', ['placeholder' => _l('unit'), 'readonly' => true], [], 'no-margin', 'input-transparent text-right wh_input_none').
