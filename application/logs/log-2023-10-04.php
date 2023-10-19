@@ -1,0 +1,36 @@
+<?php defined('BASEPATH') OR exit('No direct script access allowed'); ?>
+
+ERROR - 2023-10-04 17:53:07 --> Severity: Warning --> mysqli::real_connect(): (HY000/2002): No connection could be made because the target machine actively refused it.
+ D:\xampp7\htdocs\sonebpmnew\system\database\drivers\mysqli\mysqli_driver.php 203
+ERROR - 2023-10-04 17:53:07 --> Unable to connect to the database
+ERROR - 2023-10-04 20:51:09 --> Could not find the language line "Proforma Invoice"
+ERROR - 2023-10-04 20:51:09 --> Severity: User Notice --> Hook after_render_top_search is <strong>deprecated</strong> since version 3.0.0! Use admin_navbar_start instead. D:\xampp7\htdocs\sonebpmnew\application\helpers\deprecated_helper.php 48
+ERROR - 2023-10-04 20:51:13 --> Could not find the language line "Proforma Invoice"
+ERROR - 2023-10-04 20:51:24 --> Could not find the language line "Proforma Invoice"
+ERROR - 2023-10-04 20:51:25 --> Could not find the language line "Proforma Invoice"
+ERROR - 2023-10-04 21:01:44 --> Could not find the language line "Proforma Invoice"
+ERROR - 2023-10-04 21:01:49 --> Could not find the language line "Proforma Invoice"
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line "Proforma Invoice"
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
+ERROR - 2023-10-04 21:01:55 --> Could not find the language line ""
